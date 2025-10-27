@@ -1,3 +1,4 @@
+# Change path to where the dataset is located on your machine
 path: /home/hotdesk/yolo_docker_project
 train: /home/hotdesk/yolo_docker_project/images/train
 val: /home/hotdesk/yolo_docker_project/images/valid
