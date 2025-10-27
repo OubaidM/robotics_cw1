@@ -8,7 +8,6 @@ This repository contains the code, data pointers and notes for the Office-Goods 
 - `models/hotdesk_final_model.pt` — trained YOLO11m weights (large file, add separately).
 - `docs/DATASET_CARD.md` — dataset description.
 - `docs/ERROR_ANALYSIS.md` — per-class and model error analysis.
-- `docs/PARTNER_HANDOVER.md` — collaboration notes for integration with Part A.
 - `docs/CHANGELOG.md` — project history.
 
 ## 🚀 Environment
