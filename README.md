@@ -38,11 +38,27 @@ This repository contains the code, data pointers and notes for the Office-Goods 
 
 Per-class AP50: mug 0.81, headset 0.85, mouse 0.94, stapler 0.99, notebook 0.99, pen 0.96, phone 0.99, bottle 0.98.
 
-## 🧩 How to Run
+## 🧩 How to Run (For AMD GPU) [Tested]
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-rocm.txt
+python src/demo_app.py
+```
+
+## 🧩 How to Run (For CPU) [Partially-Tested]
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-cpu.txt
+python src/demo_app.py
+```
+
+## 🧩 How to Run (For Nvidia GPU) [Untested]
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-cuda.txt
 python src/demo_app.py
 ```
 

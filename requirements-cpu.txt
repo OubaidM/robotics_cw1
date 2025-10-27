@@ -1,0 +1,24 @@
+# Core ML (CPU-only - available on PyPI)
+torch==2.4.1
+torchvision==0.19.1
+
+# YOLO
+ultralytics==8.3.221
+
+# Inference & Demo
+gradio==4.39.0
+numpy==1.26.4
+opencv-python==4.10.0.84
+pillow==10.4.0
+
+# Utilities
+matplotlib==3.8.4
+pandas==2.2.2
+seaborn==0.13.2
+psutil==5.9.8
+pyyaml==6.0.1
+tqdm==4.66.4
+
+# Jupyter (for training notebooks)
+jupyter==1.0.0
+ipykernel==6.29.4
