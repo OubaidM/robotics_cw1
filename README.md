@@ -26,7 +26,7 @@ This repository contains the code, data pointers and notes for the Office-Goods 
   2. **Fine-tune best weights**
   3. **'Mug' class micro fine-tune**
 
-## 📊 Final Model Results
+## 📊 Final Model Results on Unseen Data (TEST SPLIT)
 | Metric | Value |
 |---------|--------|
 | mAP50 | 0.939 |
