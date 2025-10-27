@@ -1,2 +1,3 @@
 # Ignore the hotdesk_training directory at the repo root
 /hotdesk_training/
+/runs/
