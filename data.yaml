@@ -1,0 +1,15 @@
+path: /home/hotdesk/yolo_docker_project
+train: /home/hotdesk/yolo_docker_project/images/train
+val: /home/hotdesk/yolo_docker_project/images/valid
+test: /home/hotdesk/yolo_docker_project/images/test
+
+names:
+  0: mug
+  1: headset
+  2: mouse
+  3: stapler
+  4: notebook
+  5: pen
+  6: phone
+  7: bottle
+
