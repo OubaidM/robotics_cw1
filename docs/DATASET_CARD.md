@@ -1,5 +1,7 @@
 # Dataset Card — Hot-Desk Office Items
 
+**Link to dataset**: https://drive.google.com/file/d/1AMjAsiS05qCvisMhd-GK3zwGGi4cEE6D/view?usp=sharing
+
 **Classes:** mug, headset, mouse, stapler, notebook, pen, phone, bottle  
 **Total instances:** 8,345  
 **Imbalance ratio:** 5.47× (pen most frequent, bottle least)
