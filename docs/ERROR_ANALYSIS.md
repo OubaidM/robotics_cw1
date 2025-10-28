@@ -17,9 +17,9 @@ This section explains the model’s results in plain language so that collaborat
 ---
 
 ## 🧠 Understanding the Metrics
-- **mAP50 vs mAP50–95:** The difference between these two tells us about localization quality. The model’s mAP50 is 0.939, but mAP50–95 is 0.758 — this drop means boxes are close but not perfectly tight. It’s excellent at *finding* objects but slightly less precise in *positioning* them but since it will be used for classification, it is perfectly alright.
-- **IoU (Intersection over Union):** This measures how much the predicted box overlaps with the real one. A perfect box has IoU = 1.0. As IoU thresholds rise, only very tight boxes count as correct — which is why mAP50–95 is tougher.
-- **Fine-tuning hyperparameters for higher IoU performance:** This means tweaking how the model learns — such as lowering the learning rate, increasing the box loss weight, and reducing distortion in data augmentation. These small adjustments help the model learn to place bounding boxes more accurately, improving performance at stricter IoU levels.
+- **mAP50 vs mAP50–95:** The difference between these two tells us about localization quality. The model’s mAP50 is 0.939, but mAP50–95 is 0.758 — this drop means boxes are close but not perfectly tight. It’s excellent at *finding* objects but slightly less precise in *positioning* them. Since the system will be used for classification, this level of performance is more than sufficient.  
+- **IoU (Intersection over Union):** This measures how much the predicted box overlaps with the real one. A perfect box has IoU = 1.0. As IoU thresholds rise, only very tight boxes count as correct — which is why mAP50–95 is tougher.  
+- **Fine-tuning hyperparameters for higher IoU performance:** This means adjusting how the model learns — such as lowering the learning rate, increasing the box loss weight, and reducing distortion in data augmentation. These tweaks help it produce tighter, more accurate bounding boxes.
 
 ---
 
@@ -38,19 +38,44 @@ This section explains the model’s results in plain language so that collaborat
 ---
 
 ## 🔍 Observations
-1. **Mug class:** Most errors come from inconsistent bounding boxes or visual diversity — e.g., shiny mugs, different angles, partial occlusions.
-2. **Headset:** Sometimes missed when small or partially out of frame.
-3. **Minor localization drift:** The 0.18 drop between mAP50 and mAP50–95 indicates small shifts in box placement. Boxes are slightly off-center or larger than needed.
-4. **Dataset imbalance:** Pen class dominates (1970 samples) while bottle has only 360, but the model still generalizes well.
+1. **Mug class:** Most errors come from inconsistent bounding boxes or visual diversity — e.g., shiny mugs, different angles, partial occlusions.  
+2. **Headset:** Sometimes missed when small or partially out of frame.  
+3. **Minor localization drift:** The 0.18 drop between mAP50 and mAP50–95 indicates small shifts in box placement. Boxes are slightly off-center or larger than needed.  
+4. **Dataset imbalance:** Pen class dominates (1970 samples) while bottle had only 360, but the model still generalized well across classes.  
 
 ---
 
-## 🛠️ How to Improve Further
-1. Recheck mug labels and add more varied examples.
-2. Reduce geometric augmentations (like strong mosaic or perspective) in the final fine-tune to stabilize localization.
-3. Slightly increase the `box` loss weight (e.g., from 7.5 → 9.0) and lower the learning rate to focus on fine alignment.
-4. Increase training resolution (e.g., 768 px) for the final tuning stage to capture finer details.
+## ⚗️ Extended Experimentation and Class Issues
+
+While trying to improve the performance of the **bottle** class (which had limited samples), additional data and fine-tuning experiments were performed:
+
+- **Added 120 new bottle images** to increase representation.  
+- **Performed bottle-focused fine-tuning** using `copy_paste`, increased `box` and `dfl` loss weights.  
+- **Attempted layer freezing** (`freeze=10`) to stabilize shared features while refining class boundaries.  
+- **Tried partial unfreezing and reduced learning rates** (down to `1e-5`) for gentle head fine-tuning.
+
+### 🧩 Outcome
+These experiments did improve *bottle* and *pen* accuracy a lot, but also caused significant cross-class interference:
+- False positives increased heavily for **headset**.  
+- Confidence for **notebook** and other stable classes dropped notably.  
+- Global confidence scores became inconsistent.  
+
+As a result, the decision was made to **revert to the best stable checkpoint (`hotdesk_final_model.pt`)** for the final version.
 
 ---
 
-**In short:** the model finds objects very reliably, and only needs minor refinements to make its bounding boxes even more precise.
+## 🧪 Issue in Demo Application
+In `demo_app.py`, detections involving **bottle** often produce low confidence or misclassification — this stems from the limited and unbalanced bottle data. Despite targeted fine-tuning, results remained inconsistent, and improvements to one class tended to harm others.
+
+---
+
+## 🚀 Future Work
+To ensure long-term stability and reliability:
+1. **Option 1 – Remove the bottle class entirely** from training and dataset configuration to maintain balanced detection across the remaining classes.  
+2. **Option 2 – Rebuild from scratch with a more balanced dataset**, ensuring each class has roughly equal samples and consistent labeling.  
+3. Explore **class-weighted training** or **synthetic augmentation** (CutMix, CopyPaste) for future versions, but only with sufficient data diversity.
+
+---
+
+**In short:**  
+Attempts to improve the underrepresented *bottle* class demonstrated the trade-offs in fine-tuning object detectors. Enhancing one class without enough balanced data led to degraded overall performance. The final model prioritizes stability and reliability across all classes, as expected for a classification-focused deployment.
