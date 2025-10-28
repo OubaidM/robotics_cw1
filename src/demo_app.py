@@ -7,6 +7,9 @@ Open:   http://localhost:7860
 import gradio as gr
 from ultralytics import YOLO
 import cv2, os, tempfile, time
+from PIL import Image, ImageOps          # PIL handles EXIF automatically
+import numpy as np
+from pathlib import Path
 
 MODEL_PATH = "model/hotdesk_final_model.pt"   # The best model path
 model = MODEL_PATH if os.path.exists(MODEL_PATH) else "yolo11m.pt"
@@ -22,33 +25,52 @@ def resize_image(image, size=640):
     resized_image = cv2.resize(image, (new_w, new_h))
     return resized_image
 
-def predict_image(img, conf, iou):
-    """Return annotated PIL image + JSON summary"""
-    # Convert numpy array to OpenCV format if necessary
-    if len(img.shape) == 3 and img.shape[2] == 4:  # RGBA
-        img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-    elif len(img.shape) == 2:  # Grayscale
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+def auto_orient(im_pil: Image.Image) -> Image.Image:
+    """Return upright PIL image; works for any EXIF orientation tag."""
+    return ImageOps.exif_transpose(im_pil)
 
-    # Resize the image
-    img = resize_image(img)
+def predict_image(img, conf, iou):
+    """Return annotated numpy RGB image + text summary."""
+    # Normalize input into numpy RGB and also prepare a BGR copy for OpenCV/yolo
+    if isinstance(img, Image.Image):
+        pil = auto_orient(img)
+        img_rgb = np.array(pil)
+    elif isinstance(img, np.ndarray):
+        img_rgb = img  # assume Gradio / caller provides RGB numpy
+    elif isinstance(img, (str, Path)):
+        pil = Image.open(img)
+        pil = auto_orient(pil)
+        img_rgb = np.array(pil)
+    else:
+        raise TypeError("predict_image() expects a PIL.Image, numpy.ndarray, or path-like input")
+
+    # Handle alpha / grayscale -> ensure RGB
+    if img_rgb.ndim == 3 and img_rgb.shape[2] == 4:       # RGBA -> RGB
+        img_rgb = cv2.cvtColor(img_rgb, cv2.COLOR_RGBA2RGB)
+    elif img_rgb.ndim == 2:                              # Gray -> RGB
+        img_rgb = cv2.cvtColor(img_rgb, cv2.COLOR_GRAY2RGB)
+
+    # Convert to BGR for OpenCV / model if needed
+    img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+
+    # Resize (keep API expecting BGR numpy if your resize_image uses cv2)
+    img_bgr = resize_image(img_bgr)
 
     start = time.time()
-    results = net.predict(source=img, conf=conf, iou=iou, verbose=False)
-    annotated = results[0].plot()          # BGR numpy array
-    annotated = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
+    results = net.predict(source=img_bgr, conf=conf, iou=iou, verbose=False)
+    annotated_bgr = results[0].plot()          # BGR numpy array from model
+    annotated_rgb = cv2.cvtColor(annotated_bgr, cv2.COLOR_BGR2RGB)
     elapsed = time.time() - start
-    boxes   = results[0].boxes 
+
+    boxes = results[0].boxes
     summary = {net.names[int(c)]: int((boxes.cls == c).sum())
                for c in boxes.cls.unique()}
-    
-    # Extract confidences and find the maximum
-    confidences = boxes.conf.tolist()
-    max_conf = max(confidences) if confidences else 0
-    max_conf_perc = (max(confidences))*100 if confidences else 0
-    confidence_text = f"Max Confidence: {max_conf_perc:.2f}%"
 
-    return annotated, f"Inference: {elapsed*1000:.1f} ms\nObjects: {summary}\n{confidence_text}"
+    confidences = boxes.conf.tolist() if hasattr(boxes, "conf") else []
+    max_conf = max(confidences) if confidences else 0
+    confidence_text = f"Max Confidence: {max_conf*100:.2f}%"
+
+    return annotated_rgb, f"Inference: {elapsed*1000:.1f} ms\nObjects: {summary}\n{confidence_text}"
 
 def predict_video(video_path, conf, iou, progress=gr.Progress()):
     """Process video frame-by-frame and return mp4"""
@@ -57,7 +79,7 @@ def predict_video(video_path, conf, iou, progress=gr.Progress()):
     w   = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out_path = tempfile.mktemp(suffix='.mp4')
+    out_path = tempfile.mkstemp(suffix='.mp4')
     out = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
 
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
