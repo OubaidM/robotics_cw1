@@ -49,7 +49,7 @@ This section explains the model’s results in plain language so that collaborat
 
 While trying to improve the performance of the **bottle** class (which had limited samples), additional data and fine-tuning experiments were performed:
 
-- **Added 120 new bottle images** to increase representation.  
+- **Added 118 new bottle images** to increase representation.  
 - **Performed bottle-focused fine-tuning** using `copy_paste`, increased `box` and `dfl` loss weights.  
 - **Attempted layer freezing** (`freeze=10`) to stabilize shared features while refining class boundaries.  
 - **Tried partial unfreezing and reduced learning rates** (down to `1e-5`) for gentle head fine-tuning.
