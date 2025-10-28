@@ -1,8 +1,8 @@
 # Change path to where the dataset is located on your machine
 path: /home/hotdesk/yolo_docker_project
-train: /home/hotdesk/yolo_docker_project/images/train
-val: /home/hotdesk/yolo_docker_project/images/valid
-test: /home/hotdesk/yolo_docker_project/images/test
+train: /home/hotdesk/yolo_docker_project/images/train # 70% of images for training
+val: /home/hotdesk/yolo_docker_project/images/valid # 15% of images for validation
+test: /home/hotdesk/yolo_docker_project/images/test # 15% of images for testing
 
 names:
   0: mug
