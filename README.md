@@ -195,7 +195,7 @@ python src/demo_app.py --host 127.0.0.1
 
 ### Slow Inference on CPU
 
-Change in demo_app.py the imgsz to 320. Line 17 "Size"
+Change in demo_app.py the imgsz to 320. Line 20 "Size"
 
 ## File Path Issues
 
