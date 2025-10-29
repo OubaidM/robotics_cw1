@@ -57,7 +57,7 @@ def predict_image(img, conf, iou):
     img_bgr = resize_image(img_bgr)
 
     start = time.time()
-    results = net.predict(source=img_bgr, conf=conf, iou=iou, verbose=False, device=0) # Change device to "cpu" if having issues on GPU
+    results = net.predict(source=img_bgr, imgsz=640, conf=conf, iou=iou, verbose=False, device=0) # Change device to "cpu" if having issues on GPU
     annotated_bgr = results[0].plot()          # BGR numpy array from model
     annotated_rgb = cv2.cvtColor(annotated_bgr, cv2.COLOR_BGR2RGB)
     elapsed = time.time() - start
